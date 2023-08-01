@@ -1,0 +1,38 @@
+stages:
+  - test
+  - build
+  - deploy
+
+variables:
+  AWS_DEFAULT_REGION: <AWS_REGION>
+  AWS_ACCESS_KEY_ID: <AWS_ACCESS_KEY_ID>
+  AWS_SECRET_ACCESS_KEY: <AWS_SECRET_ACCESS_KEY>
+  S3_BUCKET_NAME: <BUCKET_NAME>
+  LAMBDA_FUNCTION_NAME: s3_latest_file
+
+before_script:
+  - pip install awscli
+  - pip install zappa
+  - pip install boto3
+  - pip install moto
+
+test:
+  stage: test
+  script:
+    - python test_lambda_function.py
+
+build:
+  stage: build
+  script:
+    - echo "Prepare your build here"
+    - zip -r lambda_function.zip lambda_function.py
+
+deploy:
+  stage: deploy
+  script:
+    - aws s3 cp lambda_function.zip s3://$S3_BUCKET_NAME/$LAMBDA_FUNCTION_NAME.zip
+    - >
+      aws lambda update-function-code --function-name $LAMBDA_FUNCTION_NAME 
+      --s3-bucket $S3_BUCKET_NAME 
+      --s3-key $LAMBDA_FUNCTION_NAME.zip 
+      --publish
