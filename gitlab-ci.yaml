@@ -1,7 +1,7 @@
 stages:
-  - test
   - build
   - deploy
+  - test
 
 variables:
   AWS_DEFAULT_REGION: <AWS_REGION>
@@ -15,11 +15,6 @@ before_script:
   - pip install zappa
   - pip install boto3
   - pip install moto
-
-test:
-  stage: test
-  script:
-    - python test_lambda_function.py
 
 build:
   stage: build
@@ -36,3 +31,8 @@ deploy:
       --s3-bucket $S3_BUCKET_NAME 
       --s3-key $LAMBDA_FUNCTION_NAME.zip 
       --publish
+      
+test:
+  stage: test
+  script:
+    - python -m pytest test_lambda_function.py
